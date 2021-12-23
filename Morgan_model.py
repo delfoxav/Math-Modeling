@@ -1,8 +1,5 @@
-from math import dist
 import random
 import matplotlib.pyplot as plt
-import numpy as np
-from numpy.random.mtrand import rand
 import time
 
 class Population:
@@ -18,11 +15,15 @@ class Population:
         """Death of an individual"""
         if type==True:
             self.distribution.pop()
+        elif type == False:
+            self.distribution.append(True)
         
     def birth(self,type):
         """Birth of a new individual"""
         if type== True:
             self.distribution.append(True)
+        elif type == False:
+            self.distribution.pop()
     
     
     def simulate(self,toDie,toBirth):
