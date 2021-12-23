@@ -3,7 +3,20 @@ import matplotlib.pyplot as plt
 import time
 
 class Population:
-    #uses numpy array
+    """
+    Population of two types of individual A and B
+    arg size: total size of the population
+    type size: int
+    arg distribution: list of boolean representing the population. The individuals A are represented by True and the individual B by nothing.
+    Therefore, the birth and death all have the same computational cost
+    type distribution: list(True)
+    arg fitness: selection on A or B
+    type fitness: double
+    arg negative_selection: if True the fitness favors B default False
+    type negative_selection: boolean
+    """
+    
+    
     def __init__(self,size,distribution,fitness=1, negative_selection=False):
         self.size=size
         self.fitness=fitness
@@ -32,6 +45,8 @@ class Population:
         self.memory.append(sum(self.distribution))
         
     def plot(self):
+        """To DO"""
+        
         plt.plot(self.memory)
         plt.ylabel('Number of A individuals')
         plt.xlabel('steps')
@@ -56,11 +71,17 @@ def calculate_Next_step(population):
     
     return(birth,death)
 
+
+
+
+############Simulation#######################
+
 size=40000
+fitness=2
+initial_distribution=[True]*(size//2)
 
-popu=Population(size,[True]*(size//2),2,negative_selection=True)
+popu=Population(size,initial_distribution,fitness,negative_selection=False)
 step=40000
-
 
 start=time.time()
 for i in range(step):
@@ -68,5 +89,5 @@ for i in range(step):
     popu.simulate(toDie,toBirth)
 
 stop=time.time()
-print(stop-start)
+print("The simulation took %.4f seconds" %(stop-start))
 popu.plot()
