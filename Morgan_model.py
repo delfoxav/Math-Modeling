@@ -1,6 +1,7 @@
 import random
 import matplotlib.pyplot as plt
 import time
+import numpy as np
 
 class Population:
     """
@@ -76,18 +77,50 @@ def calculate_Next_step(population):
 
 ############Simulation#######################
 
-size=40000
+size=100
+length = int(np.sqrt(size)) # only if size is square number
+
 fitness=2
 initial_distribution=[True]*(size//2)
 
 popu=Population(size,initial_distribution,fitness,negative_selection=False)
-step=40000
+step=100
+
+# Visualization
+fig, ax = plt.subplots()
+Z = [True] * (size // 2) + [False] * (size - (size // 2))
+np.random.shuffle(Z)
+Z = np. reshape(np.array(Z), (length, length))
 
 start=time.time()
 for i in range(step):
     toBirth,toDie=calculate_Next_step(popu)
     popu.simulate(toDie,toBirth)
 
+    # Visualization
+    ax.cla()
+    ax.imshow(Z)
+    ax.set_title("frame {}".format(i))
+    plt.pause(0.01)
+
+    if toDie == True and toBirth == False:
+        x, y = np.where(Z == True)
+        if len(x) > 0:
+            i = np.random.randint(len(x))
+            random_pos = (x[i], y[i])
+            Z[random_pos] = False
+
+
+    if toDie == False and toBirth == True:
+        x, y = np.where(Z == False)
+        if len(x) > 0:
+            i = np.random.randint(len(x))
+            random_pos = (x[i], y[i])
+            Z[random_pos] = True
+    
 stop=time.time()
 print(f"the simulation took {stop-start:.4f} seconds")
-popu.plot()
+# Problem: size of popu.distribution != np.sum(Z)
+print("Size popu.distribution:", sum(popu.distribution))
+print("Size Z:", np.sum(Z))
+#popu.plot()
