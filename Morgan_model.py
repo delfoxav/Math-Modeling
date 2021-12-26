@@ -89,5 +89,5 @@ for i in range(step):
     popu.simulate(toDie,toBirth)
 
 stop=time.time()
-print("The simulation took %.4f seconds" %(stop-start))
+print(f"the simulation took {stop-start:.4f} seconds")
 popu.plot()
