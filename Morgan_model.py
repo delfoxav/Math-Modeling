@@ -25,24 +25,11 @@ class Population:
         self.negative_selection=negative_selection
         self.memory=[sum(distribution)]
     
-    def death(self,type):
-        """Death of an individual"""
-        if type==True:
-            self.distribution.pop()
-        elif type == False:
-            self.distribution.append(True)
-        
-    def birth(self,type):
-        """Birth of a new individual"""
-        if type== True:
-            self.distribution.append(True)
-        elif type == False:
-            self.distribution.pop()
-    
-    
     def simulate(self,toDie,toBirth):
-        self.birth(toBirth)
-        self.death(toDie)
+        if toDie == True and toBirth == False:
+            self.distribution.pop()
+        elif toDie == False and toBirth == True:
+            self.distribution.append(True)
         self.memory.append(sum(self.distribution))
         
     def plot(self):
@@ -94,6 +81,8 @@ Z = np. reshape(np.array(Z), (length, length))
 
 start=time.time()
 for i in range(step):
+    print("Size popu.distribution:", sum(popu.distribution))
+    print("Size Z:", np.sum(Z))
     toBirth,toDie=calculate_Next_step(popu)
     popu.simulate(toDie,toBirth)
 
