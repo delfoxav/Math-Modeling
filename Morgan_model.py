@@ -23,14 +23,15 @@ class Population:
         self.fitness=fitness
         self.distribution=distribution
         self.negative_selection=negative_selection
-        self.memory=[sum(distribution)]
+        self.memory=sum(distribution)
     
+
     def simulate(self,toDie,toBirth):
         if toDie == True and toBirth == False:
             self.distribution.pop()
         elif toDie == False and toBirth == True:
             self.distribution.append(True)
-        self.memory.append(sum(self.distribution))
+        self.memory=sum(self.distribution)
         
     def plot(self):
         """To DO"""
@@ -42,10 +43,10 @@ class Population:
 
 def calculate_Next_step(population):
     if not population.negative_selection:
-        birththreshold=(population.memory[-1]*population.fitness)/((population.memory[-1]*population.fitness)+population.size-population.memory[-1])
+        birththreshold=(population.memory*population.fitness)/((population.memory*population.fitness)+population.size-population.memory)
     else:
-        birththreshold=(population.memory[-1])/((population.memory[-1])+(population.size-population.memory[-1])*population.fitness)
-    deaththreshold=population.memory[-1]/population.size
+        birththreshold=(population.memory)/((population.memory)+(population.size-population.memory)*population.fitness)
+    deaththreshold=population.memory/population.size
     birth=random.uniform(0,1)
     death=random.uniform(0,1)
     if birth <= birththreshold:
@@ -71,7 +72,7 @@ fitness=2
 initial_distribution=[True]*(size//2)
 
 popu=Population(size,initial_distribution,fitness,negative_selection=False)
-step=100
+step=100000
 
 # Visualization
 fig, ax = plt.subplots()
@@ -81,8 +82,6 @@ Z = np. reshape(np.array(Z), (length, length))
 
 start=time.time()
 for i in range(step):
-    print("Size popu.distribution:", sum(popu.distribution))
-    print("Size Z:", np.sum(Z))
     toBirth,toDie=calculate_Next_step(popu)
     popu.simulate(toDie,toBirth)
 
