@@ -24,32 +24,22 @@ class Population:
         self.negative_selection=negative_selection
         self.memory=[sum(distribution)]
     
-    def death(self,type):
-        """Death of an individual"""
-        if type==True:
-            self.distribution.pop()
-        elif type == False:
-            self.distribution.append(True)
-        
-    def birth(self,type):
-        """Birth of a new individual"""
-        if type== True:
-            self.distribution.append(True)
-        elif type == False:
-            self.distribution.pop()
-    
-    
     def simulate(self,toDie,toBirth):
-        self.birth(toBirth)
-        self.death(toDie)
+        if toDie == True and toBirth == False:
+            self.distribution.pop()
+        elif toDie == False and toBirth == True:
+            self.distribution.append(True)
         self.memory.append(sum(self.distribution))
         
     def plot(self):
         """To DO"""
         
-        plt.plot(self.memory)
+        plt.plot(self.memory, label="Population of A")
+
         plt.ylabel('Number of A individuals')
         plt.xlabel('steps')
+        plt.ylim([0, self.size+self.size*0.1]) #added 10% to the upper limit to help the vizualisation
+        plt.legend()
         plt.show()
 
 def calculate_Next_step(population):
@@ -76,7 +66,7 @@ def calculate_Next_step(population):
 
 ############Simulation#######################
 
-size=40000
+size=400
 fitness=2
 initial_distribution=[True]*(size//2)
 
