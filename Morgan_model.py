@@ -77,8 +77,8 @@ step=100000
 
 # Visualization
 fig, ax = plt.subplots()
-cmap = colors.ListedColormap([[46/255,139/255,87/255]])
-cmap.set_bad(color=[75/255,0,130/255])
+cmap = colors.ListedColormap([[46/255, 139/255, 87/255]])
+cmap.set_bad(color=[75/255, 0, 130/255])
 
 Z = [True] * (size // 2) + [False] * (size - (size // 2))
 np.random.shuffle(Z)
@@ -90,16 +90,15 @@ for i in range(step):
     popu.simulate(toDie,toBirth)
 
     # Visualization
-    Z = np.ma.masked_where(Z == False, Z)
+    Y = np.ma.masked_where(Z == False, Z)
     ax.cla()
-    ax.imshow(Z, cmap=cmap)
-    ax.set_title("frame {}".format(i))
+    ax.imshow(Y, cmap=cmap)
+    ax.set_title(f"step {i}                                               {np.sum(Z)}/{Z.size}")
     plt.pause(0.01)
 
-    # print(np.sum(Z), Z.size, sum(popu.distribution))
-    # if np.sum(Z) == Z.size or np.sum(Z) == 0:
-    #     plt.pause(3)
-    #     break          
+    if np.sum(Z) == Z.size or np.sum(Z) == 0:
+        plt.pause(3)
+        break          
               
     if toDie == True and toBirth == False:
         x, y = np.where(Z == True)
@@ -118,4 +117,3 @@ for i in range(step):
     
 stop=time.time()
 print(f"the simulation took {stop-start:.4f} seconds")
-#popu.plot()
