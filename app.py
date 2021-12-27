@@ -10,6 +10,8 @@ import plotly.express as px
 import time as time
 from dash.exceptions import PreventUpdate
 
+i=1
+
 #Function to define if a number is a perfect square:
 def isPerfectsquare(number):
     if np.sqrt(number)%1==0:
@@ -102,22 +104,24 @@ def update_interval(step):
     Input('submit-val','n_clicks'))
 
 def display_distribution(A,B,step,submit):
+    global i
     Z = [True]*A+[False]*B
     np.random.shuffle(Z)
     #Z = np. reshape(np.array(Z), (np.sqrt(init_A+init_B), np.sqrt(init_A+init_B)))
     if not isPerfectsquare(B+A):
         fig=px.imshow([[0,0],
               [0,0]],binary_string=True)
+        i=0
         return "Please change the numbers t o form a square", fig , A,B
     else:
-        
+        i=i+1
         if (A==0 or B==0):
             fig=px.imshow([[0,0],[0,0]],binary_string=True)
-            print(step)
+            
         else:
             A,B=CalculateNextStep(A,B)
             fig=px.imshow(CreateSquare(A,B))
-            fig.update_layout(title_text="Step "+str(step),
+            fig.update_layout(title_text="Step "+str(i),
                 title_font_size=30)
             time.sleep(0.1)
         return "", fig,A,B
