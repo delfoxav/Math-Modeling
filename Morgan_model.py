@@ -69,7 +69,7 @@ def calculate_Next_step(population):
 
 ############Simulation#######################
 def verification(step,size,fitness,initial_distribution,nbr_runs,negative_selection,output_file):
-    """fonction to verify the implementation of the Moran model. Runs the model multiple time with the same initial parameters
+    """function to verify the implementation of the Moran model. Runs the model multiple time with the same initial parameters
     and plot the results
     param: step: number of step for each simulation
     param: fitness: selection coefficient
