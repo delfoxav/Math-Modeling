@@ -9,6 +9,7 @@ import numpy as np
 import plotly.express as px
 import time as time
 from dash.exceptions import PreventUpdate
+import random
 
 i=1
 
@@ -27,9 +28,22 @@ def CreateSquare(initA,initB):
 
     return img_rgb
 
-def CalculateNextStep(A,B):
-    A+=1
-    B-=1
+def CalculateNextStep(A,B,fitness,selection_on):
+    if selection_on=="A":
+        birththreshold=(A*fitness)/((A*fitness)+B)
+    elif selection_on =="B":
+        birththreshold=(A)/(A+(B*fitness))
+    deaththreshold=A/(A+B)
+    birth=random.uniform(0,1)
+    death=random.uniform(0,1)
+    if birth <= birththreshold:
+        A+=1
+    else:
+        B+=1
+    if death <=deaththreshold:
+        A-=1
+    else:
+        B-=1
     return (A,B)
 
 fig=px.imshow([[0,0],
@@ -61,7 +75,7 @@ app.layout = html.Div([
                   type='number',
                   min = 1,
                   step = 1),
-        "Steps: ",
+        "Steps NOT WORKING YET: ",
         dcc.Input(id='Step',
                   value=10,
                   type='number',
@@ -81,7 +95,7 @@ app.layout = html.Div([
         html.Div(id='slider-output-distribution', style={'margin-top': 20})
     ]),
     html.Div([dcc.Graph(id="graph",figure=fig)]),
-    dcc.Interval(id="refresh-graph-interval", disabled=True, interval=1*500, n_intervals=10)
+    dcc.Interval(id="refresh-graph-interval", disabled=True, interval=1*200, n_intervals=10)
 ])
 
 #Store the number of step NOT WORKING YET
@@ -127,10 +141,12 @@ def Simulate(A,B,submit,stop):
     Output('B','value'),
     Input("refresh-graph-interval","n_intervals"),
     State('A', 'value'),
-    State("B","value")
+    State("B","value"),
+    State('fitness','value'),
+    State('negfit','value'),
     
     )
-def update_graph(n,A,B):
+def update_graph(n,A,B,fitness,selection_on):
     global i
     i=i+1
     if (A==0):
@@ -139,7 +155,7 @@ def update_graph(n,A,B):
         fig=px.imshow([[0,0],[0,0]])
         
     else:
-        A,B=CalculateNextStep(A,B)
+        A,B=CalculateNextStep(A,B,fitness,selection_on)
         fig=px.imshow(CreateSquare(A,B))
         fig.update_layout(title_text="Step "+str(i),
             title_font_size=30)
