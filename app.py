@@ -76,11 +76,12 @@ app.layout = html.Div([
                        value='A',
                         labelStyle={'display': 'inline-block'}
                         ),
-        html.Button('Submit',id='submit-val',n_clicks=0),
+        html.Button('Start',id='submit-val',n_clicks=0),
+        html.Button('Stop',id='stop-val',n_clicks=0),
         html.Div(id='slider-output-distribution', style={'margin-top': 20})
     ]),
     html.Div([dcc.Graph(id="graph",figure=fig)]),
-    dcc.Interval(id="refresh-graph-interval", disabled=False, interval=1*1000, n_intervals=10)
+    dcc.Interval(id="refresh-graph-interval", disabled=True, interval=1*500, n_intervals=10)
 ])
 
 #Store the number of step NOT WORKING YET
@@ -95,37 +96,57 @@ def update_interval(step):
 #Rebuild the plot according to the value of A and B
 @app.callback(
     Output(component_id='slider-output-distribution',component_property='children'),
+    Output("refresh-graph-interval","disabled"),
+    State('A', 'value'),
+    State("B","value"),
+    Input('submit-val','n_clicks'),
+    Input('stop-val','n_clicks'))
+
+def Simulate(A,B,submit,stop):
+    ctx = dash.callback_context
+    button = ctx.triggered[0]['prop_id'].split('.')[0]
+    print(button)
+    if button == 'stop-val':
+        global i
+        i=0
+        return "", True
+    elif button == "submit-val":
+        Z = [True]*A+[False]*B
+        np.random.shuffle(Z)
+        #Z = np. reshape(np.array(Z), (np.sqrt(init_A+init_B), np.sqrt(init_A+init_B)))
+        if not isPerfectsquare(B+A):
+            return "Please change the numbers to form a square",True
+        else:
+        
+            return "", False
+
+   
+@app.callback(
     Output('graph','figure'),
     Output('A','value'),
     Output('B','value'),
-    State('A', 'value'),
-    State("B","value"),
     Input("refresh-graph-interval","n_intervals"),
-    Input('submit-val','n_clicks'))
-
-def display_distribution(A,B,step,submit):
+    State('A', 'value'),
+    State("B","value")
+    
+    )
+def update_graph(n,A,B):
     global i
-    Z = [True]*A+[False]*B
-    np.random.shuffle(Z)
-    #Z = np. reshape(np.array(Z), (np.sqrt(init_A+init_B), np.sqrt(init_A+init_B)))
-    if not isPerfectsquare(B+A):
-        fig=px.imshow([[0,0],
-              [0,0]],binary_string=True)
-        i=0
-        return "Please change the numbers t o form a square", fig , A,B
+    i=i+1
+    if (A==0):
+        fig=px.imshow([[1,1],[1,1]])
+    elif(B==0):
+        fig=px.imshow([[0,0],[0,0]])
+        
     else:
-        i=i+1
-        if (A==0 or B==0):
-            fig=px.imshow([[0,0],[0,0]],binary_string=True)
-            
-        else:
-            A,B=CalculateNextStep(A,B)
-            fig=px.imshow(CreateSquare(A,B))
-            fig.update_layout(title_text="Step "+str(i),
-                title_font_size=30)
-            time.sleep(0.1)
-        return "", fig,A,B
-   
+        A,B=CalculateNextStep(A,B)
+        fig=px.imshow(CreateSquare(A,B))
+        fig.update_layout(title_text="Step "+str(i),
+            title_font_size=30)
+        time.sleep(0.1)
+    return fig,A,B
+    
+
 
 
 if __name__ == '__main__':
