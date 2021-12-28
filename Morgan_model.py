@@ -2,6 +2,8 @@ import random
 import matplotlib.pyplot as plt
 import time
 
+from numpy import negative
+
 class Population:
     """
     Population of two types of individual A and B
@@ -64,20 +66,84 @@ def calculate_Next_step(population):
 
 
 
+
 ############Simulation#######################
+def verification(step,size,fitness,initial_distribution,nbr_runs,negative_selection,output_file):
+    """fonction to verify the implementation of the Moran model. Runs the model multiple time with the same initial parameters
+    and plot the results
+    param: step: number of step for each simulation
+    param: fitness: selection coefficient
+    param: size: size of the population
+    param: initial_distribution: initial distribution (A/B) of the population
+    param: nbr_runs: number of runs for the verification
+    param: negative_selection: is the selection on B? 
+    param: output_file: name of the file to save the plot
+    
+    type: step: int
+    type: fitness: unsigned float
+    type: size: int
+    type initial_distribution: list of TRUE
+    type nbr_runs: int
+    type negative_selection: boolean
+    type output_file: str
+    """
 
-size=400
-fitness=2
-initial_distribution=[True]*(size//2)
+    results=[]
 
-popu=Population(size,initial_distribution,fitness,negative_selection=False)
-step=40000
+    for i in range(nbr_runs):
+        popu=Population(size,initial_distribution.copy(),fitness,negative_selection=negative_selection)
+        
 
-start=time.time()
-for i in range(step):
-    toBirth,toDie=calculate_Next_step(popu)
-    popu.simulate(toDie,toBirth)
+        start=time.time()
+        for i in range(step):
+            toBirth,toDie=calculate_Next_step(popu)
+            popu.simulate(toDie,toBirth)
 
-stop=time.time()
-print(f"the simulation took {stop-start:.4f} seconds")
-popu.plot()
+        stop=time.time()
+        print(f"the simulation took {stop-start:.4f} seconds")
+        #popu.plot()
+        results.append(popu.memory)
+
+
+    ###Plotting
+    for i in range(len(results)):
+        plt.plot(results[i], label="Run "+str(i+1))
+
+    plt.legend()
+    #plt.show()
+    plt.savefig(output_file)
+    plt.clf()
+
+
+
+################### Call the verification function from here ############################## 
+
+size=20 #Size of the population
+fitness=2 #selection coefficient
+initial_distribution=[True]*(size//2) #initial distribution
+nbr_runs=4 #Number of runs (for the validation)
+step=10000
+negative_selection=False
+output_file="verification/Test1.png"
+verification(step=step,size=size,fitness=fitness,initial_distribution=initial_distribution,nbr_runs=nbr_runs,negative_selection=negative_selection,output_file=output_file)
+
+size=400 #Size of the population
+fitness=2 #selection coefficient
+initial_distribution=[True]*(size//2) #initial distribution
+step=200
+nbr_runs=4 #Number of runs (for the validation)
+negative_selection=False
+output_file="verification/Test2.png"
+
+verification(step=step,size=size,fitness=fitness,initial_distribution=initial_distribution,nbr_runs=nbr_runs,negative_selection=negative_selection,output_file=output_file)
+
+
+size=40000 #Size of the population
+fitness=2 #selection coefficient
+initial_distribution=[True]*(size//2) #initial distribution
+step=200
+nbr_runs=4 #Number of runs (for the validation)
+negative_selection=False
+output_file="verification/Test3.png"
+
+verification(step=step,size=size,fitness=fitness,initial_distribution=initial_distribution,nbr_runs=nbr_runs,negative_selection=negative_selection,output_file=output_file)
