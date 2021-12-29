@@ -1,8 +1,11 @@
 import random
 import matplotlib.pyplot as plt
 import time
+import os
+import csv
+#import sys, getopt
 
-from numpy import negative
+from numpy import NaN, negative
 
 class Population:
     """
@@ -63,6 +66,41 @@ def calculate_Next_step(population):
     
     return(birth,death)
 
+def AbsorbingStateCalculation(size,fitness,initial_distribution,negative_selection):
+    "Calculate the most probable Absorbing State with infinit number of steps"
+    if fitness!=1:
+        if negative_selection == False:
+            #Equation 6.17
+            try:
+                p0 = (1-1/fitness**sum(initial_distribution))/(1-1/fitness**0)
+            except ZeroDivisionError:
+                p0=0
+            try:
+                pN = (1-1/fitness**sum(initial_distribution))/(1-1/fitness**size)
+            except ZeroDivisionError:
+                pN=0
+        else:
+            #Adaptation of equation 6.18
+            try:
+                pN = (1-1/fitness**(size-sum(initial_distribution)))/(1-1/fitness**0)
+            except ZeroDivisionError:
+                pN=0
+            try:
+                p0 = (1-1/fitness**(size-sum(initial_distribution)))/(1-1/fitness**size)
+            except ZeroDivisionError:
+                p0=0
+       
+    else:
+        #Equation 6.5
+        p0=(size-sum(initial_distribution))/size
+        pN=sum(initial_distribution)/size
+    if p0>pN:
+        absorbingState="Full B"
+    else:
+        absorbingState= "Full A"
+    
+    return max(p0,pN), absorbingState
+
 
 
 
@@ -87,20 +125,32 @@ def verification(step,size,fitness,initial_distribution,nbr_runs,negative_select
     type negative_selection: boolean
     type output_file: str
     """
+    AbsorbtionAtA=0
+    AbsorbtionAtB=0
 
     results=[]
+    if negative_selection==True:
+        fitnessOn='B'
+    else:
+        fitnessOn='A'
 
     for i in range(nbr_runs):
         popu=Population(size,initial_distribution.copy(),fitness,negative_selection=negative_selection)
         
 
         start=time.time()
-        for i in range(step):
+        for j in range(step):
             toBirth,toDie=calculate_Next_step(popu)
             popu.simulate(toDie,toBirth)
 
         stop=time.time()
-        print(f"the simulation took {stop-start:.4f} seconds")
+        print(f"The simulation took {stop-start:.4f} seconds, Simulation {i}/{nbr_runs}")
+        #Store absorbing state:
+        if popu.memory[-1] ==size:
+            AbsorbtionAtA+=1
+        elif popu.memory[-1] == 0:
+            AbsorbtionAtB+=1
+            
         #popu.plot()
         results.append(popu.memory)
 
@@ -109,41 +159,68 @@ def verification(step,size,fitness,initial_distribution,nbr_runs,negative_select
     for i in range(len(results)):
         plt.plot(results[i], label="Run "+str(i+1))
 
-    plt.legend()
+    
+    if nbr_runs <=10: #Avoid having plot with too many legends
+        plt.legend()
     #plt.show()
+    
     plt.savefig(output_file)
     plt.clf()
+    if AbsorbtionAtA==AbsorbtionAtB and AbsorbtionAtA==0:
+        mostProbableResultObserved="Didn't converge"
+        observedProbability=NaN
+    
+    elif AbsorbtionAtA>=AbsorbtionAtB:
+        mostProbableResultObserved="Full A"
+        observedProbability=AbsorbtionAtA/(AbsorbtionAtA+AbsorbtionAtB)
+    else:
+        mostProbableResultObserved="Full B"
+        observedProbability=AbsorbtionAtB/(AbsorbtionAtA+AbsorbtionAtB)
+    CalculatedProbability,mostProbableResultCalculated= AbsorbingStateCalculation(size=size,fitness=fitness,initial_distribution=initial_distribution,negative_selection=negative_selection)
+    
+    headers=["Population size",
+             "Initial number of A",
+             "Initial number of B",
+             "fitness on",
+             "fitness",
+             "number of Steps",
+             "number of runs",
+             "most probable result calculated",
+             "calculated probability",
+             "most probable result observed",
+             "observed probability",]
+    results=[{'Population size':str(size),
+             'Initial number of A':str(sum(initial_distribution)),
+             'Initial number of B':str(size-sum(initial_distribution)),
+             'fitness on':fitnessOn,
+             'fitness':str(fitness),
+             'number of Steps':str(step),
+             'number of runs':str(nbr_runs),
+             'most probable result calculated':mostProbableResultCalculated,
+             "calculated probability":CalculatedProbability,
+             "most probable result observed":mostProbableResultObserved,
+             "observed probability":observedProbability}]
+    if not os.path.isfile("verification/result_verification.csv"): #Create the csv
+        with open("verification/result_verification.csv",'w',encoding='UTF8') as f:
+            writer = csv.DictWriter(f,fieldnames=headers)
+            writer.writeheader()
+            f.close()
+    
+    with open("verification/result_verification.csv","a",encoding="UTF8") as f:
+        writer = csv.DictWriter(f,fieldnames=headers)
+        writer.writerows(results)
+        f.close()
 
 
 
 ################### Call the verification function from here ############################## 
 
 size=20 #Size of the population
-fitness=2 #selection coefficient
+fitness=1.1 #selection coefficient
 initial_distribution=[True]*(size//2) #initial distribution
-nbr_runs=4 #Number of runs (for the validation)
-step=10000
-negative_selection=False
+nbr_runs=4000 #Number of runs (for the validation)
+step=20000
+negative_selection=True
 output_file="verification/Test1.png"
 verification(step=step,size=size,fitness=fitness,initial_distribution=initial_distribution,nbr_runs=nbr_runs,negative_selection=negative_selection,output_file=output_file)
 
-size=400 #Size of the population
-fitness=2 #selection coefficient
-initial_distribution=[True]*(size//2) #initial distribution
-step=200
-nbr_runs=4 #Number of runs (for the validation)
-negative_selection=False
-output_file="verification/Test2.png"
-
-verification(step=step,size=size,fitness=fitness,initial_distribution=initial_distribution,nbr_runs=nbr_runs,negative_selection=negative_selection,output_file=output_file)
-
-
-size=40000 #Size of the population
-fitness=2 #selection coefficient
-initial_distribution=[True]*(size//2) #initial distribution
-step=200
-nbr_runs=4 #Number of runs (for the validation)
-negative_selection=False
-output_file="verification/Test3.png"
-
-verification(step=step,size=size,fitness=fitness,initial_distribution=initial_distribution,nbr_runs=nbr_runs,negative_selection=negative_selection,output_file=output_file)
