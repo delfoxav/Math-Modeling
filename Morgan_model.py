@@ -7,6 +7,9 @@ import csv
 
 from numpy import NaN, negative
 
+#TO DO WHAT IS THE LINK BETWEEN FITNESS AND SELECTION
+
+
 class Population:
     """
     Population of two types of individual A and B
@@ -27,7 +30,11 @@ class Population:
         self.fitness=fitness
         self.distribution=distribution
         self.negative_selection=negative_selection
-        self.memory=[sum(distribution)]
+        self.memory=[sum(self.distribution)]
+        #DEAL WITH NEGATIVE SELECTION
+        self.selection = self.fitness
+        self.birthrates=[CalculateBirthRate(A=sum(self.distribution),B=size-sum(self.distribution),fitness=self.selection)]
+        self.deathrates=[CalculateDeathRate(A=sum(self.distribution),B=size-sum(self.distribution),fitness=self.selection)]
     
     def simulate(self,toDie,toBirth):
         if toDie == True and toBirth == False:
@@ -35,17 +42,30 @@ class Population:
         elif toDie == False and toBirth == True:
             self.distribution.append(True)
         self.memory.append(sum(self.distribution))
+        self.deathrates.append(CalculateDeathRate(A=sum(self.distribution),B=size-sum(self.distribution),fitness=self.selection))
+        self.birthrates.append(CalculateBirthRate(A=sum(self.distribution),B=size-sum(self.distribution),fitness=self.selection))
+        
         
     def plot(self):
         """To DO"""
         
         plt.plot(self.memory, label="Population of A")
-
+       
         plt.ylabel('Number of A individuals')
         plt.xlabel('steps')
         plt.ylim([0, self.size+self.size*0.1]) #added 10% to the upper limit to help the vizualisation
         plt.legend()
         plt.show()
+        
+    def plot_death_birth_rates(self):
+        plt.plot(self.deathrates,label="death Rates")
+        plt.plot(self.birthrates,label="birth Rates")
+        plt.ylabel('rates')
+        plt.xlabel('steps')
+        plt.ylim([0, 1]) 
+        plt.legend()
+        plt.show()
+
 
 def calculate_Next_step(population):
     if not population.negative_selection:
@@ -101,6 +121,24 @@ def AbsorbingStateCalculation(size,fitness,initial_distribution,negative_selecti
     
     return max(p0,pN), absorbingState
 
+def CalculateBirthRate(A,B,selection):
+    """Calculation of the birth rate of A in a population of A and B individuals with a selection coefficient between 0 and 1 in favor of A when fitness>1
+    Without any mutation."""
+    try:
+        BirthRate= (1+selection)*((A-B)/A)*(B/A)
+    except ZeroDivisionError:
+        BirthRate = 0
+    return BirthRate
+
+
+def CalculateDeathRate(A,B):
+    """Calculation of the death rate of A in a population of A and B individuals without any mutation."""
+    try:
+        deathRate= (A/B)*(1-A/B)
+    except ZeroDivisionError:
+        deathRate = NaN ###To be defined
+    
+    return deathRate
 
 
 
@@ -216,11 +254,17 @@ def verification(step,size,fitness,initial_distribution,nbr_runs,negative_select
 ################### Call the verification function from here ############################## 
 
 size=20 #Size of the population
-fitness=1.1 #selection coefficient
+fitness=1 #selection coefficient
 initial_distribution=[True]*(size//2) #initial distribution
 nbr_runs=4000 #Number of runs (for the validation)
-step=20000
+step=200
 negative_selection=True
 output_file="verification/Test1.png"
-verification(step=step,size=size,fitness=fitness,initial_distribution=initial_distribution,nbr_runs=nbr_runs,negative_selection=negative_selection,output_file=output_file)
+#verification(step=step,size=size,fitness=fitness,initial_distribution=initial_distribution,nbr_runs=nbr_runs,negative_selection=negative_selection,output_file=output_file)
 
+popu=Population(size=size,distribution=initial_distribution,fitness=fitness)
+for j in range(step):
+    toBirth,toDie=calculate_Next_step(popu)
+    popu.simulate(toDie,toBirth)
+popu.plot_death_birth_rates()
+print(popu.birthrates)
