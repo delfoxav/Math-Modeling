@@ -199,6 +199,10 @@ def verification(step: int, size: int, fitness: float, initial_distribution: lis
 
     results = []
     nbr_steps = []
+    
+    if not os.path.isdir("verification"): #create the directory to store the verification files
+        os.mkdir("verification")
+    
 
     if negative_selection == True:
         fitnessOn = 'B'
@@ -219,7 +223,7 @@ def verification(step: int, size: int, fitness: float, initial_distribution: lis
                 break
 
         stop = time.time()
-        #print(f"The simulation took {stop - start:.4f} seconds, Simulation {i}/{nbr_runs}")
+        print(f"The simulation took {stop - start:.4f} seconds, Simulation {i}/{nbr_runs}")
 
         # Store absorbing state:
         if popu.memory[-1] == size:
@@ -250,7 +254,7 @@ def verification(step: int, size: int, fitness: float, initial_distribution: lis
     else:
         mostProbableResultObserved = "Full B"
         observedProbability = AbsorbtionAtB / (AbsorbtionAtA + AbsorbtionAtB)
-        print(f"AbsorbtionAtB {AbsorbtionAtB}, AbsorptionAtA {AbsorbtionAtA}, nbr_runs {nbr_runs}, initial dis {sum(initial_distribution)}, size {size}, fitness {fitness}")
+        #print(f"AbsorbtionAtB {AbsorbtionAtB}, AbsorptionAtA {AbsorbtionAtA}, nbr_runs {nbr_runs}, initial dis {sum(initial_distribution)}, size {size}, fitness {fitness}")
     CalculatedProbability, mostProbableResultCalculated = AbsorbingStateCalculation(size=size, fitness=fitness,
                                                                                     initial_distribution=initial_distribution,
                                                                                     negative_selection=negative_selection)
@@ -285,8 +289,6 @@ def verification(step: int, size: int, fitness: float, initial_distribution: lis
                 "most probable result observed": mostProbableResultObserved,
                 "observed probability": observedProbability}]
     
-    if not os.path.isdir("verification"): #create the directory to store the verification files
-        os.mkdir("verification")
     if not os.path.isfile("verification/result_verification.csv"):  # Create the csv
         with open("verification/result_verification.csv", 'w', encoding='UTF8') as f:
             writer = csv.DictWriter(f, fieldnames=headers)
@@ -393,5 +395,6 @@ def main_deathbirth():
                            output_file=f"{output_path}/size{size}_initdist{initdist}_fitness{fitness}.pdf")
 
 if __name__ == "__main__":
-    main_deathbirth()
+    #main_deathbirth()
+    main_verification()
    
