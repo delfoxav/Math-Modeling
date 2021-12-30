@@ -55,8 +55,6 @@ def calculate_Next_step(population):
     return (birth, death)
 
 
-############Simulation#######################
-
 def simulation(step, size, fitness, initial_distribution, output_path, negative_selection=False):
     """live simulation of the moran process
     all 10 steps the plot is saved as pdf file into the output_path
@@ -126,6 +124,8 @@ def simulation(step, size, fitness, initial_distribution, output_path, negative_
     stop = time.time()
     print(f"the simulation took {stop - start:.4f} seconds")
 
+
+############Simulation#######################
 
 size = 100
 fitness = 2
