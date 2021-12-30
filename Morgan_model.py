@@ -4,8 +4,10 @@ import time
 import os
 import csv
 # import sys, getopt
+from typing import Union
 
-from numpy import NaN, negative
+
+from numpy import NaN, negative, mean
 
 
 # TO DO WHAT IS THE LINK BETWEEN FITNESS AND SELECTION
@@ -15,18 +17,16 @@ from numpy import NaN, negative
 class Population:
     """
     Population of two types of individual A and B
-    arg size: total size of the population
-    type size: int
-    arg distribution: list of boolean representing the population. The individuals A are represented by True and the individual B by nothing.
-    Therefore, the birth and death all have the same computational cost
-    type distribution: list(True)
-    arg fitness: selection on A or B
-    type fitness: double
-    arg negative_selection: if True the fitness favors B default False
-    type negative_selection: boolean
+
+    :param int size:                total size of the population
+    :param list[True] distribution: list of boolean representing the population
+                                    The individuals A are represented by True and the individual B by nothing.
+                                    Therefore, the birth and death all have the same computational cost
+    :param float fitness:           selection on A or B
+    :param bool negative_selection: if True the fitness favors B default False
     """
 
-    def __init__(self, size, distribution, fitness=1, negative_selection=False):
+    def __init__(self, size: int, distribution: list[True], fitness: float = 1, negative_selection: bool = False):
         self.size = size
         self.fitness = fitness
         self.distribution = distribution
@@ -39,19 +39,26 @@ class Population:
         self.deathrates = [
             CalculateDeathRate(A=sum(self.distribution), B=size - sum(self.distribution), fitness=self.selection)]
 
-    def simulate(self, toDie, toBirth):
+    def simulate(self, toDie: bool, toBirth: bool) -> None:
+        """
+        Simulates a step of the Moran process
+        Calculate step specific death and birth rate
+
+        :param bool toDie:      individual for death True for A individual False for B individual
+        :param bool toBirth:    individual for reproduction True for A individual False for B individual
+        """
         if toDie == True and toBirth == False:
             self.distribution.pop()
         elif toDie == False and toBirth == True:
             self.distribution.append(True)
         self.memory.append(sum(self.distribution))
         self.deathrates.append(
-            CalculateDeathRate(A=sum(self.distribution), B=size - sum(self.distribution), fitness=self.selection))
+            CalculateDeathRate(A=sum(self.distribution), B=self.size - sum(self.distribution), fitness=self.selection))
         self.birthrates.append(
-            CalculateBirthRate(A=sum(self.distribution), B=size - sum(self.distribution), fitness=self.selection))
+            CalculateBirthRate(A=sum(self.distribution), B=self.size - sum(self.distribution), fitness=self.selection))
 
-    def plot(self):
-        """To DO"""
+    def plot(self) -> None:
+        """plot the number of A individuals over time"""
 
         plt.plot(self.memory, label="Population of A")
 
@@ -61,7 +68,10 @@ class Population:
         plt.legend()
         plt.show()
 
-    def plot_death_birth_rates(self):
+    def plot_death_birth_rates(self) -> None:
+        """plot for birth and death rates over time
+                death rate = birth rate * fitness
+        """
         plt.plot(self.deathrates, label="death Rates")
         plt.plot(self.birthrates, label="birth Rates")
         plt.ylabel('rates')
@@ -71,7 +81,12 @@ class Population:
         plt.show()
 
 
-def calculate_Next_step(population):
+def calculate_Next_step(population: Population) -> tuple[bool, bool]:
+    """Return boolean for birth and death
+
+    :param Population population:
+    :return:
+    """
     if not population.negative_selection:
         birththreshold = (population.memory[-1] * population.fitness) / (
                     (population.memory[-1] * population.fitness) + population.size - population.memory[-1])
@@ -93,8 +108,15 @@ def calculate_Next_step(population):
     return (birth, death)
 
 
-def AbsorbingStateCalculation(size, fitness, initial_distribution, negative_selection):
-    "Calculate the most probable Absorbing State with infinit number of steps"
+def AbsorbingStateCalculation(size: int, fitness: float, initial_distribution: list[True],
+                              negative_selection: bool) -> tuple[Union[float, int], str]:
+    """Calculate the most probable Absorbing State with infinit number of steps
+
+    :param int size:                            size of the population
+    :param float fitness:                       selection coefficient
+    :param list[True] initial_distribution:     initial distribution (A/B) of the population
+    :param boolean negative_selection:          is the selection on B?
+    """
     if fitness != 1:
         if negative_selection == False:
             # Equation 6.17
@@ -129,9 +151,15 @@ def AbsorbingStateCalculation(size, fitness, initial_distribution, negative_sele
     return max(p0, pN), absorbingState
 
 
-def CalculateBirthRate(A, B, fitness):
+def CalculateBirthRate(A: int, B: int, fitness: float) -> Union[float, int]:
     """Calculation of the birth rate of A in a population of A and B individuals with a selection coefficient between 0 and 1 in favor of A when fitness>1
-    Without any mutation."""
+    Without any mutation.
+
+    :param int A:           number of A individuals (sum of distribution)
+    :param int B:           number of B individuals (N - i; size - sum of distribution)
+    :param float fitness:   selection coefficient
+    :return:                rate of birth
+    """
     try:
         BirthRate = (B / (A + B)) * (fitness * A / (fitness * A + B))
     except ZeroDivisionError:
@@ -139,8 +167,14 @@ def CalculateBirthRate(A, B, fitness):
     return BirthRate
 
 
-def CalculateDeathRate(A, B, fitness):
-    """Calculation of the death rate of A in a population of A and B individuals without any mutation."""
+def CalculateDeathRate(A: int, B: int, fitness: float) -> Union[float, int]:
+    """Calculation of the death rate of A in a population of A and B individuals without any mutation.
+
+    :param int A:           number of A individuals (sum of distribution)
+    :param int B:           number of B individuals (N - i; size - sum of distribution)
+    :param float fitness:   selection coefficient
+    :return:                rate of death
+    """
     try:
         DeathRate = (A / (A + B)) * (B / (fitness * A + B))
         # simplification of the DeathRate: fitness * Birthrate
@@ -150,29 +184,25 @@ def CalculateDeathRate(A, B, fitness):
 
 
 ############Simulation#######################
-def verification(step, size, fitness, initial_distribution, nbr_runs, negative_selection, output_file):
+def verification(step: int, size: int, fitness: float, initial_distribution: list[True], nbr_runs: int,
+                 negative_selection: bool, output_file: str) -> None:
     """function to verify the implementation of the Moran model. Runs the model multiple time with the same initial parameters
     and plot the results
-    param: step: number of step for each simulation
-    param: fitness: selection coefficient
-    param: size: size of the population
-    param: initial_distribution: initial distribution (A/B) of the population
-    param: nbr_runs: number of runs for the verification
-    param: negative_selection: is the selection on B?
-    param: output_file: name of the file to save the plot
 
-    type: step: int
-    type: fitness: unsigned float
-    type: size: int
-    type initial_distribution: list of TRUE
-    type nbr_runs: int
-    type negative_selection: boolean
-    type output_file: str
+    :param int step:                            number of step for each simulation
+    :param float fitness:                       selection coefficient
+    :param int size:                            size of the population
+    :param list[True] initial_distribution:     initial distribution (A/B) of the population
+    :param int nbr_runs:                        number of runs for the verification
+    :param boolean negative_selection:          is the selection on B?
+    :param str output_file:                     name of the file to save the plot
     """
     AbsorbtionAtA = 0
     AbsorbtionAtB = 0
 
     results = []
+    nbr_steps = []
+
     if negative_selection == True:
         fitnessOn = 'B'
     else:
@@ -186,8 +216,14 @@ def verification(step, size, fitness, initial_distribution, nbr_runs, negative_s
             toBirth, toDie = calculate_Next_step(popu)
             popu.simulate(toDie, toBirth)
 
+            # stop simulation, when absorption state is reached
+            if sum(popu.distribution) == 0 or sum(popu.distribution) == popu.size:
+                nbr_steps.append(i)
+                break
+
         stop = time.time()
         print(f"The simulation took {stop - start:.4f} seconds, Simulation {i}/{nbr_runs}")
+
         # Store absorbing state:
         if popu.memory[-1] == size:
             AbsorbtionAtA += 1
@@ -221,12 +257,18 @@ def verification(step, size, fitness, initial_distribution, nbr_runs, negative_s
                                                                                     initial_distribution=initial_distribution,
                                                                                     negative_selection=negative_selection)
 
+    if nbr_steps:
+        max_nbr_steps = max(nbr_steps)
+    else:
+        max_nbr_steps = "Didn't converge"
+
     headers = ["Population size",
                "Initial number of A",
                "Initial number of B",
                "fitness on",
                "fitness",
                "number of Steps",
+               "max number of Steps used",
                "number of runs",
                "most probable result calculated",
                "calculated probability",
@@ -238,6 +280,7 @@ def verification(step, size, fitness, initial_distribution, nbr_runs, negative_s
                 'fitness on': fitnessOn,
                 'fitness': str(fitness),
                 'number of Steps': str(step),
+                'max number of Steps used': max_nbr_steps,
                 'number of runs': str(nbr_runs),
                 'most probable result calculated': mostProbableResultCalculated,
                 "calculated probability": CalculatedProbability,
@@ -257,19 +300,42 @@ def verification(step, size, fitness, initial_distribution, nbr_runs, negative_s
 
 ################### Call the verification function from here ##############################
 
-size = 10  # Size of the population
-fitness = 0.5  # selection coefficient
-initial_distribution = [True] * 5  # initial distribution
-nbr_runs = 10000  # Number of runs (for the validation)
-step = 1000
-negative_selection = True
-output_file = "verification/Test1.png"
-# verification(step=step,size=size,fitness=fitness,initial_distribution=initial_distribution,nbr_runs=nbr_runs,negative_selection=negative_selection,output_file=output_file)
+def main_verification():
+    nbr_runs = 10000  # Number of runs (for the validation)
+    step = 1000000
+    negative_selection = False
+    output_path = "verification"
 
-popu = Population(size=size, distribution=initial_distribution, fitness=fitness)
-for j in range(step):
-    toBirth, toDie = calculate_Next_step(popu)
-    popu.simulate(toDie, toBirth)
-popu.plot_death_birth_rates()
-print(popu.birthrates)
-print(popu.deathrates)
+
+    for size in [10, 100, 1000]:                    # sample size of 1000 might be to high
+        for initdist in [1, size//2, size-1]:
+            initial_distribution = [True] * initdist
+            for fitness in [0.001, 0.01, 0.1, 0.5, 0.9, 0.99, 1, 1.01, 1.1, 2, 10, 100, 1000]:
+                verification(step=step,size=size,fitness=fitness,initial_distribution=initial_distribution,
+                             nbr_runs=nbr_runs,negative_selection=negative_selection,
+                             output_file=f"{output_path}/size{size}_initdist{initdist}_fitness{fitness}.pdf")
+
+
+
+
+#################### Birth Death Parameters ###################
+
+def main_deathbirth():
+    size = 100  # Size of the population
+    fitness = 2  # selection coefficient
+    initial_distribution = [True] * 50 # initial distribution
+    step = 1000000
+
+    popu = Population(size=size, distribution=initial_distribution, fitness=fitness)
+    for j in range(step):
+        toBirth, toDie = calculate_Next_step(popu)
+        popu.simulate(toDie, toBirth)
+
+        # stop simulation, when absorption state is reached
+        if sum(popu.distribution) == 0 or sum(popu.distribution) == popu.size:
+            break
+
+    popu.plot_death_birth_rates()
+
+if __name__ == "__main__":
+    main_deathbirth()
