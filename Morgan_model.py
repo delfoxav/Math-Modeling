@@ -53,7 +53,7 @@ class Population:
        
         plt.ylabel('Number of A individuals')
         plt.xlabel('steps')
-        plt.ylim([0, self.size+self.size*0.1]) #added 10% to the upper limit to help the vizualisation
+        plt.ylim([0, self.size*1.1]) #added 10% to the upper limit to help the vizualisation
         plt.legend()
         plt.show()
         
@@ -204,7 +204,7 @@ def verification(step,size,fitness,initial_distribution,nbr_runs,negative_select
     
     plt.savefig(output_file)
     plt.clf()
-    if AbsorbtionAtA==AbsorbtionAtB and AbsorbtionAtA==0:
+    if AbsorbtionAtA + AbsorbtionAtB == nbr_runs:
         mostProbableResultObserved="Didn't converge"
         observedProbability=NaN
     
