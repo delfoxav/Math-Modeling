@@ -8,7 +8,7 @@ import csv
 from numpy import NaN, negative
 
 #TO DO WHAT IS THE LINK BETWEEN FITNESS AND SELECTION
-
+## Nicolas: A higher fitness leadsto a higher probability of fixation
 
 class Population:
     """
