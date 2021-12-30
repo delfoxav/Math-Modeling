@@ -207,7 +207,7 @@ def verification(step, size, fitness, initial_distribution, nbr_runs, negative_s
 
     plt.savefig(output_file)
     plt.clf()
-    if AbsorbtionAtA + AbsorbtionAtB == nbr_runs:
+    if AbsorbtionAtA + AbsorbtionAtB != nbr_runs:
         mostProbableResultObserved = "Didn't converge"
         observedProbability = NaN
 
