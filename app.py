@@ -11,7 +11,7 @@ import time as time
 from dash.exceptions import PreventUpdate
 import random
 
-i=1
+i=0
 
 #Function to define if a number is a perfect square:
 def isPerfectsquare(number):
@@ -55,17 +55,17 @@ img_rgb = [[[255, 0, 0], [0, 255, 0], [0, 0, 255]],
            [[0, 255, 0], [0, 0, 255], [255, 0, 0]]]
 
 app.layout = html.Div([
-    html.H1("Please define the maximum size of the population, the initial distribution and the fitness"),
+    html.H1("Please define the initial distribution, the fitness and the number of steps"),
     html.Div([
         "Initial A individuals: ",
         dcc.Input(id='A',
-                  value=100,
+                  value=2,
                   type='number',
                   min = 1,
                   step = 1),
         "Initial B individuals: ",
         dcc.Input(id='B',
-                  value=100,
+                  value=2,
                   type='number',
                   min = 1,
                   step = 1),
@@ -73,9 +73,8 @@ app.layout = html.Div([
         dcc.Input(id='fitness',
                   value=1,
                   type='number',
-                  min = 1,
-                  step = 1),
-        "Steps NOT WORKING YET: ",
+                  min = 1),
+        "Steps: ",
         dcc.Input(id='Step',
                   value=10,
                   type='number',
@@ -84,27 +83,42 @@ app.layout = html.Div([
         
     ]),
     html.Div([
+        html.Br(),
         "fitness on: ",
         dcc.RadioItems(id='negfit',
                        options=[{'label': i, 'value': i} for i in ['A', 'B']],     
                        value='A',
                         labelStyle={'display': 'inline-block'}
                         ),
+        html.Br(),
         html.Button('Start',id='submit-val',n_clicks=0),
         html.Button('Stop',id='stop-val',n_clicks=0),
         html.Div(id='slider-output-distribution', style={'margin-top': 20})
     ]),
     html.Div([dcc.Graph(id="graph",figure=fig)]),
-    dcc.Interval(id="refresh-graph-interval", disabled=True, interval=1*200, n_intervals=10)
+    dcc.Interval(id="refresh-graph-interval", disabled=True, interval=1*500, n_intervals=0),
+    html.Div([
+         dcc.Textarea(
+        id='A legend',
+        value='A is in yellow',
+        style={'width': '100%', 'height': 50,'width':250,'background':'yellow','fontSize':20}),
+        dcc.Textarea(
+        id='B legend',
+        value='B is in blue',
+        style={'width': '100%', 'height': 50,'width':250,'background':'blue','fontSize':20}),
+        ])
 ])
 
-#Store the number of step NOT WORKING YET
 @app.callback(
+    Output("refresh-graph-interval","max_intervals"),
     Output("refresh-graph-interval","n_intervals"),
-    Input("Step","value")
-)
-def update_interval(step):
-    return step
+    Input('submit-val','n_clicks'),
+    State('Step','value'), prevent_initial_call=True)
+def update_interval(submit, step):
+    
+    return step,0
+    
+    
 
 
 #Rebuild the plot according to the value of A and B
@@ -114,7 +128,7 @@ def update_interval(step):
     State('A', 'value'),
     State("B","value"),
     Input('submit-val','n_clicks'),
-    Input('stop-val','n_clicks'))
+    Input('stop-val','n_clicks'), prevent_initial_call=True)
 
 def Simulate(A,B,submit,stop):
     ctx = dash.callback_context
@@ -123,16 +137,17 @@ def Simulate(A,B,submit,stop):
     if button == 'stop-val':
         global i
         i=0
-        return "", True
+        return " ", True
     elif button == "submit-val":
         Z = [True]*A+[False]*B
         np.random.shuffle(Z)
-        #Z = np. reshape(np.array(Z), (np.sqrt(init_A+init_B), np.sqrt(init_A+init_B)))
         if not isPerfectsquare(B+A):
             return "Please change the numbers to form a square",True
         else:
         
-            return "", False
+            return " ", False
+    else:
+        return " ", True
 
    
 @app.callback(
@@ -143,22 +158,30 @@ def Simulate(A,B,submit,stop):
     State('A', 'value'),
     State("B","value"),
     State('fitness','value'),
-    State('negfit','value'),
-    
+    State('negfit','value'),prevent_initial_call=True
     )
 def update_graph(n,A,B,fitness,selection_on):
     global i
     i=i+1
     if (A==0):
-        fig=px.imshow([[1,1],[1,1]])
+        full_B = np.array([[[13, 8, 135], [13, 8, 135]],
+                    [[13, 8, 135], [13, 8, 135]]
+                   ], dtype=np.uint8)
+        fig=px.imshow(full_B)
+        fig.update_layout(coloraxis_showscale=False)
     elif(B==0):
-        fig=px.imshow([[0,0],[0,0]])
+        full_A = np.array([[[240, 249, 33], [240, 249, 33]],
+                    [[240, 249, 33], [240, 249, 33]]
+                   ], dtype=np.uint8)
+        fig=px.imshow(full_A)
+        fig.update_layout(coloraxis_showscale=False)
         
     else:
         A,B=CalculateNextStep(A,B,fitness,selection_on)
         fig=px.imshow(CreateSquare(A,B))
         fig.update_layout(title_text="Step "+str(i),
             title_font_size=30)
+        fig.update_layout(coloraxis_showscale=False)
         time.sleep(0.1)
     return fig,A,B
     
@@ -166,4 +189,4 @@ def update_graph(n,A,B,fitness,selection_on):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=False,host='0.0.0.0')
