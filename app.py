@@ -11,7 +11,7 @@ import time as time
 from dash.exceptions import PreventUpdate
 import random
 
-i=0
+#i=0
 
 #Function to define if a number is a perfect square:
 def isPerfectsquare(number):
@@ -27,7 +27,7 @@ def CreateSquare(initA,initB):
     #img_rgb=nparray.tolist()
 
     return img_rgb
-
+ 
 def CalculateNextStep(A,B,fitness,selection_on):
     if selection_on=="A":
         birththreshold=(A*fitness)/((A*fitness)+B)
@@ -53,6 +53,8 @@ app = dash.Dash(__name__)
 
 img_rgb = [[[255, 0, 0], [0, 255, 0], [0, 0, 255]],
            [[0, 255, 0], [0, 0, 255], [255, 0, 0]]]
+
+server = app.server
 
 app.layout = html.Div([
     html.H1("Please define the initial distribution, the fitness and the number of steps"),
@@ -135,8 +137,8 @@ def Simulate(A,B,submit,stop):
     button = ctx.triggered[0]['prop_id'].split('.')[0]
     print(button)
     if button == 'stop-val':
-        global i
-        i=0
+        #global i
+        #i=0
         return " ", True
     elif button == "submit-val":
         Z = [True]*A+[False]*B
@@ -161,8 +163,8 @@ def Simulate(A,B,submit,stop):
     State('negfit','value'),prevent_initial_call=True
     )
 def update_graph(n,A,B,fitness,selection_on):
-    global i
-    i=i+1
+ #   global i
+  #  i=i+1
     if (A==0):
         full_B = np.array([[[13, 8, 135], [13, 8, 135]],
                     [[13, 8, 135], [13, 8, 135]]
@@ -179,7 +181,7 @@ def update_graph(n,A,B,fitness,selection_on):
     else:
         A,B=CalculateNextStep(A,B,fitness,selection_on)
         fig=px.imshow(CreateSquare(A,B))
-        fig.update_layout(title_text="Step "+str(i),
+        fig.update_layout(title_text="Step "+str(n),
             title_font_size=30)
         fig.update_layout(coloraxis_showscale=False)
         time.sleep(0.1)
@@ -189,4 +191,4 @@ def update_graph(n,A,B,fitness,selection_on):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=False,host='0.0.0.0')
+    app.run_server(debug=False, host='0.0.0.0')
