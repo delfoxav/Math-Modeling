@@ -62,7 +62,7 @@ class Population:
         plt.ylabel('Number of A individuals')
         plt.xlabel('steps')
         plt.ylim([0, self.size * 1.1])  # added 10% to the upper limit to help the vizualisation
-        plt.legend()
+        plt.legend(frameon=False)
         plt.show()
 
     def plot_death_birth_rates(self) -> None:
