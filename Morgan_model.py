@@ -284,7 +284,7 @@ def verification(step: int, size: int, fitness: float, initial_distribution: lis
 
             # stop simulation, when absorption state is reached
             if sum(popu.distribution) == 0 or sum(popu.distribution) == popu.size:
-                nbr_steps.append(i)
+                nbr_steps.append(j)
                 break
 
         stop = time.time()
