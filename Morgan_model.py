@@ -74,7 +74,7 @@ class Population:
         plt.ylabel('rates')
         plt.xlabel('steps')
         # plt.ylim([0, 1])
-        plt.legend()
+        plt.legend(frameon=False)
         plt.show()
 
 
@@ -304,7 +304,7 @@ def verification(step: int, size: int, fitness: float, initial_distribution: lis
         plt.plot(results[i], label="Run " + str(i + 1))
 
     if nbr_runs <= 10:  # Avoid having plot with too many legends
-        plt.legend()
+        plt.legend(frameon=False)
     # plt.show()            # TODO: delete obsolote lines of code
 
     plt.savefig(output_file)
@@ -410,11 +410,27 @@ def deathbirth(size: int, initial_distribution: list[True], fitness: float, step
         if sum(popu.distribution) == 0 or sum(popu.distribution) == popu.size:
             break
 
-    plt.plot(popu.deathrates, label="death Rates")
-    plt.plot(popu.birthrates, label="birth Rates")
-    plt.ylabel('rates')
-    plt.xlabel('steps')
-    plt.legend()
+    plt.style.use("seaborn-talk")
+    fig, ax1 = plt.subplots(figsize=[12, 6])
+
+    lns1 = ax1.plot(popu.deathrates, label="death rate", color="navy")
+    lns2 = ax1.plot(popu.birthrates, label="birth rate", color="purple")
+    ax1.tick_params(axis='y', labelcolor="rebeccapurple")
+    ax1.set_ylabel('rate', color="rebeccapurple")
+
+    ax2 = ax1.twinx()
+    lns3 = ax2.plot(popu.memory, label="population of A", color="orangered")
+    ax2.tick_params(axis='y', labelcolor="orangered")
+    ax2.set_ylabel("population", color="orangered")
+
+    # added these three lines
+    lns = lns1 + lns2 + lns3
+    labs = [l.get_label() for l in lns]
+    ax1.legend(lns, labs, loc="upper left", frameon=False)
+
+
+    ax1.set_xlabel('steps')
+    plt.show()
     plt.savefig(output_file)
     plt.clf()
 
