@@ -430,7 +430,7 @@ def deathbirth(size: int, initial_distribution: list[True], fitness: float, step
     plt.clf()
 
 
-def report_visualization():
+def report_livevisualization():
     """Live visualization"""
     step = 10000
     size = 100      # must be a square number
@@ -465,6 +465,6 @@ def report_deathbirth():
 
 # by uncommenting, the code used in the report can be run
 if __name__ == "__main__":
-    # report_visualization()
+    report_livevisualization()
     # report_verification()
     # report_deathbirth()
