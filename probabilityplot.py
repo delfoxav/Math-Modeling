@@ -1,18 +1,19 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-def pfunction(N: int, i: int, r: float):
+def pfunction(N: int, i: int, r: float) -> float:
     """
-    calculates the probability of fixation according to equation (6) and (10)
+    calculates the probability of fixation according to equation (5) and (9)
 
     :param int N:   population size
     :param int i:   number of initial individuals A
     :param float r: fitness of A
+    :return:        probability of fixation
     """
     if r == 1:
         return i/N
     if (1-1/r**N) == 0:
-        p = 0
+        p = 0.0
     else:
         p = (1-1/r**i)/(1-1/r**N)
     return p
