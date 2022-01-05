@@ -7,8 +7,6 @@ import csv
 from typing import Union
 from numpy import NaN, random, reshape, sqrt, array, ma, where, logical_not, sum as npsum
 
-# TODO: check if it is problematic to import random and from numpy import random
-
 
 class Population:
     """
@@ -305,7 +303,6 @@ def verification(step: int, size: int, fitness: float, initial_distribution: lis
 
     if nbr_runs <= 10:  # Avoid having plot with too many legends
         plt.legend(frameon=False)
-    # plt.show()            # TODO: delete obsolote lines of code
 
     plt.savefig(output_file)
     plt.clf()
@@ -319,8 +316,7 @@ def verification(step: int, size: int, fitness: float, initial_distribution: lis
     else:
         mostProbableResultObserved = "Full B"
         observedProbability = AbsorbtionAtB / (AbsorbtionAtA + AbsorbtionAtB)
-        # print(f"AbsorbtionAtB {AbsorbtionAtB}, AbsorptionAtA {AbsorbtionAtA}, nbr_runs {nbr_runs}, initial dis {sum(initial_distribution)}, size {size}, fitness {fitness}")
-        # TODO: delete obsolote lines of code
+        
     CalculatedProbability, mostProbableResult = AbsorbingStateCalculation(size=size, fitness=fitness,
                                                                           initial_distribution=initial_distribution,
                                                                           negative_selection=negative_selection)
@@ -430,8 +426,8 @@ def deathbirth(size: int, initial_distribution: list[True], fitness: float, step
 
 
     ax1.set_xlabel('steps')
+    plt.savefig(f"death_birth/{output_file}")
     plt.show()
-    plt.savefig(output_file)
     plt.clf()
 
 
@@ -465,15 +461,7 @@ def main_verification():
 
 def main_deathbirth():
     """Birth Death Parameters"""
-    step = 1000
-    output_path = "death_birth"
-
-    for size in [10, 100, 1000]:  # sample size of 1000 might be to high
-        for initdist in [1, size // 2, size - 1]:
-            initial_distribution = [True] * initdist
-            for fitness in [0.001, 0.01, 0.1, 0.5, 0.9, 0.99, 1, 1.01, 1.1, 2, 10, 100, 1000]:
-                deathbirth(size=size, initial_distribution=initial_distribution, fitness=fitness, step=step,
-                           output_file=f"{output_path}/size{size}_initdist{initdist}_fitness{fitness}.pdf")
+    deathbirth(size=100, initial_distribution=[True], fitness=2, step=100000, output_file="deathbirthplot.pdf")
 
 
 if __name__ == "__main__":
