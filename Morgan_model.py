@@ -113,14 +113,14 @@ def AbsorbingStateCalculation(size: int, fitness: float, initial_distribution: l
     """
     if fitness != 1:
         if not negative_selection:
-            # Equation 6.17
+            # Equation (9)
             try:
                 pN = (1 - 1 / fitness ** sum(initial_distribution)) / (1 - 1 / fitness ** size)
             except ZeroDivisionError:
                 pN = 0
             p0 = 1 - pN
         else:
-            # Adaptation of equation 6.18
+            # Adaptation of equation (9)
             try:
                 p0 = (1 - 1 / fitness ** (size - sum(initial_distribution))) / (1 - 1 / fitness ** size)
             except ZeroDivisionError:
@@ -128,7 +128,7 @@ def AbsorbingStateCalculation(size: int, fitness: float, initial_distribution: l
             pN = 1 - p0
 
     else:
-        # Equation 6.5
+        # Equation (5)
         p0 = (size - sum(initial_distribution)) / size
         pN = sum(initial_distribution) / size
     if p0 > pN:
