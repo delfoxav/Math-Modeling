@@ -450,7 +450,7 @@ def report_verification():
     negative_selection = False
     output_path = "verification"
 
-    for size in [10, 100, 1000]:  # sample size of 1000 might be to high
+    for size in [10, 100]:
         for initdist in [1, size // 2, size - 1]:
             initial_distribution = [True] * initdist
             for fitness in [0.001, 0.01, 0.1, 0.5, 0.9, 0.99, 1, 1.01, 1.1, 2, 10, 100, 1000]:
