@@ -431,7 +431,7 @@ def deathbirth(size: int, initial_distribution: list[True], fitness: float, step
     plt.clf()
 
 
-def main_visualization():
+def report_visualization():
     """Live visualization"""
     step = 10000
     size = 100      # must be a square number
@@ -443,7 +443,7 @@ def main_visualization():
                    output_path=output_path, negative_selection=False)
 
 
-def main_verification():
+def report_verification():
     """Verification"""
     nbr_runs = 1000  # Number of runs (for the validation)
     step = 1000000
@@ -459,12 +459,13 @@ def main_verification():
                              output_file=f"{output_path}/size{size}_initdist{initdist}_fitness{fitness}.pdf")
 
 
-def main_deathbirth():
+def report_deathbirth():
     """Birth Death Parameters"""
     deathbirth(size=100, initial_distribution=[True], fitness=2, step=100000, output_file="deathbirthplot.pdf")
 
 
+# by uncommenting, the code used in the report can be run
 if __name__ == "__main__":
-    main_visualization()
-    # main_verification()
-    # main_deathbirth()
+    # report_visualization()
+    # report_verification()
+    # report_deathbirth()
