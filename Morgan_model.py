@@ -71,7 +71,6 @@ class Population:
         plt.plot(self.birthrates, label="birth Rates")
         plt.ylabel('rates')
         plt.xlabel('steps')
-        # plt.ylim([0, 1])
         plt.legend(frameon=False)
         plt.show()
 
