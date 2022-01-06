@@ -28,6 +28,25 @@ def CreateSquare(initA,initB):
 
     return img_rgb
  
+def Updatesquare(previousSquare,toBirth,toDie,A,B):
+    previousSquare=np.asarray(previousSquare)
+    if toDie == 1 and toBirth == 0:
+        x, y = np.where(previousSquare == 1)
+        if len(x) > 0:
+            i = np.random.randint(len(x))
+            random_pos=(x[i], y[i])
+            previousSquare[random_pos] = 0
+            
+    if toDie == 0 and toBirth == 1:
+        x, y = np.where(previousSquare == 0)
+        if len(x) > 0:
+            i = np.random.randint(len(x))
+            random_pos=(x[i],y[i])
+            previousSquare[random_pos] = 1
+    previousSquare =np.reshape(np.array(previousSquare),(int(np.sqrt(A+B)),int(np.sqrt(A+B))))
+    return previousSquare
+
+ 
 def CalculateNextStep(A,B,fitness,selection_on):
     if selection_on=="A":
         birththreshold=(A*fitness)/((A*fitness)+B)
@@ -38,16 +57,21 @@ def CalculateNextStep(A,B,fitness,selection_on):
     death=random.uniform(0,1)
     if birth <= birththreshold:
         A+=1
+        birth = 1
     else:
         B+=1
+        birth = 0
     if death <=deaththreshold:
         A-=1
+        death = 1
     else:
         B-=1
-    return (A,B)
+        death = 0
+    return (A,B, birth, death)
 
-fig=px.imshow([[0,0],
-              [0,0]],binary_string=True)
+img = [[0,0],[0,0]]
+
+fig=px.imshow(img,binary_string=True)
 
 app = dash.Dash(__name__)
 
@@ -85,6 +109,7 @@ app.layout = html.Div([
         
     ]),
     html.Div([
+        dcc.Store(id='storeSquare',storage_type='local',data= CreateSquare(2,2)),
         html.Br(),
         "fitness on: ",
         dcc.RadioItems(id='negfit',
@@ -115,6 +140,7 @@ app.layout = html.Div([
     Output("refresh-graph-interval","max_intervals"),
     Output("refresh-graph-interval","n_intervals"),
     Input('submit-val','n_clicks'),
+    
     State('Step','value'), prevent_initial_call=True)
 def update_interval(submit, step):
     
@@ -124,71 +150,71 @@ def update_interval(submit, step):
 
 
 #Rebuild the plot according to the value of A and B
+
+    
+   
 @app.callback(
     Output(component_id='slider-output-distribution',component_property='children'),
     Output("refresh-graph-interval","disabled"),
-    State('A', 'value'),
-    State("B","value"),
-    Input('submit-val','n_clicks'),
-    Input('stop-val','n_clicks'), prevent_initial_call=True)
-
-def Simulate(A,B,submit,stop):
-    ctx = dash.callback_context
-    button = ctx.triggered[0]['prop_id'].split('.')[0]
-    print(button)
-    if button == 'stop-val':
-        #global i
-        #i=0
-        return " ", True
-    elif button == "submit-val":
-        Z = [True]*A+[False]*B
-        np.random.shuffle(Z)
-        if not isPerfectsquare(B+A):
-            return "Please change the numbers to form a square",True
-        else:
-        
-            return " ", False
-    else:
-        return " ", True
-
-   
-@app.callback(
     Output('graph','figure'),
     Output('A','value'),
     Output('B','value'),
+    Output('storeSquare','data'),
     Input("refresh-graph-interval","n_intervals"),
+    Input('submit-val','n_clicks'),
+    Input('stop-val','n_clicks'),
     State('A', 'value'),
     State("B","value"),
     State('fitness','value'),
-    State('negfit','value'),prevent_initial_call=True
+    State('negfit','value'),
+    State('storeSquare','data'),prevent_initial_call=True
     )
-def update_graph(n,A,B,fitness,selection_on):
- #   global i
-  #  i=i+1
-    if (A==0):
-        full_B = np.array([[[13, 8, 135], [13, 8, 135]],
-                    [[13, 8, 135], [13, 8, 135]]
-                   ], dtype=np.uint8)
-        fig=px.imshow(full_B)
-        fig.update_layout(coloraxis_showscale=False)
-    elif(B==0):
-        full_A = np.array([[[240, 249, 33], [240, 249, 33]],
-                    [[240, 249, 33], [240, 249, 33]]
-                   ], dtype=np.uint8)
-        fig=px.imshow(full_A)
-        fig.update_layout(coloraxis_showscale=False)
-        
-    else:
-        A,B=CalculateNextStep(A,B,fitness,selection_on)
-        fig=px.imshow(CreateSquare(A,B))
-        fig.update_layout(title_text="Step "+str(n),
-            title_font_size=30)
-        fig.update_layout(coloraxis_showscale=False)
-        time.sleep(0.1)
-    return fig,A,B
+def update_graph(n, submit, stop, A, B, fitness, selection_on, storeSquare):
     
+    ctx = dash.callback_context
+    button = ctx.triggered[0]['prop_id'].split('.')[0]
+    if button == 'stop-val':
+        fig=px.imshow(img,binary_string=True)
+        fig.update_layout(coloraxis_showscale=False)
+        return " ", True, fig, A, B, storeSquare
+    elif button == "submit-val":
+        if not isPerfectsquare(B+A):
+            fig=px.imshow(img)
+            fig.update_layout(coloraxis_showscale=False)
+            return "Please change the numbers to form a square",True, fig, A, B, storeSquare
+        else:
+            newSquare=CreateSquare(A,B)
+            fig=px.imshow(storeSquare)
+            fig.update_layout(coloraxis_showscale=False)
+            return " ", False, fig, A, B, newSquare
+    else:
+            
+        if (A==0):
+            newSquare = np.array([[[13, 8, 135], [13, 8, 135]],
+                        [[13, 8, 135], [13, 8, 135]]
+                    ], dtype=np.uint8)
+            fig=px.imshow(newSquare)
+            fig.update_layout(coloraxis_showscale=False)
+        elif(B==0):
+            newSquare = np.array([[[240, 249, 33], [240, 249, 33]],
+                        [[240, 249, 33], [240, 249, 33]]
+                    ], dtype=np.uint8)
+            fig=px.imshow(newSquare)
+            fig.update_layout(coloraxis_showscale=False)
+            
+        else:
+            A, B, toBirth, toDie = CalculateNextStep(A,B,fitness,selection_on)
+            newSquare=storeSquare
+            newSquare=Updatesquare(newSquare, toBirth, toDie, A, B)
+            fig=px.imshow(newSquare)
+            fig.update_layout(title_text="Step "+str(n),
+                title_font_size=30)
+            fig.update_layout(coloraxis_showscale=False)
+            time.sleep(0.1)
+        return " ", False,fig, A, B, newSquare
+        
 
 
 
 if __name__ == '__main__':
-    app.run_server(debug=False, host='0.0.0.0')
+    app.run_server(debug=True, host='0.0.0.0')  
