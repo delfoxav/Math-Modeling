@@ -1,22 +1,5 @@
-# Math-Modeling
-```
-         v
-        >X<
-         A
-        d$b
-      .d\$$b.
-    .d$i$$\$$b.
-       d$$@b
-      d\$$$ib
-    .d$$$\$$$b
-  .d$$@$$$$\$$ib.
-      d$$i$$b
-     d\$$$$@$b
-  .d$@$$\$$$$$@b.
-.d$$$$i$$$\$$$$$$b.
-        ###
-        ###
-        ###
-```
+# Project of Math Modeling Lecture Master ACLS January 2022
 
-Access works ;)
+## Implementation of Moran Model in python 
+
+The corresponding report paper is availble under request
